@@ -1,0 +1,132 @@
+Certainly! To create SQL tables based on user access, you would typically need two tables: one for users and another for their access privileges. 
+Here's an example schema:
+
+sql
+CREATE TABLE users (
+    id INT PRIMARY KEY,
+    username VARCHAR(50) UNIQUE,
+    password VARCHAR(100)
+);
+
+CREATE TABLE access_privileges (
+    id INT PRIMARY KEY,
+    user_id INT,
+    table_name VARCHAR(50),
+    can_read BOOLEAN,
+    can_write BOOLEAN,
+    FOREIGN KEY (user_id) REFERENCES users(id)
+);
+
+
+In this example, the `users` table stores information about each user, including their unique `id`, `username`, and `password`.
+
+The `access_privileges` table stores the access privileges for each user. It has an `id` column for identification, 
+a `user_id` column that references the corresponding user in the `users` table, a `table_name` 
+column to specify the table they have access to, and `can_read` and `can_write` columns to indicate their read and write permissions for that table.
+
+You can then insert data into these tables based on the actual users and their access privileges. Here's an example:
+
+sql
+INSERT INTO users (id, username, password)
+VALUES
+    (1, 'john', 'password123'),
+    (2, 'jane', 'securepass');
+
+INSERT INTO access_privileges (id, user_id, table_name, can_read, can_write)
+VALUES
+    (1, 1, 'employees', true, true),
+    (2, 2, 'employees', true, false),
+    (3, 2, 'orders', true, true);
+
+
+In this example, the user 'john' (user_id 1) has full access (read and write) to the 'employees' table, 
+while the user 'jane' (user_id 2) has read access to 'employees' and read/write access to the 'orders' table.
+
+Feel free to modify the table structure and insert statements according to your specific needs and requirements.
+
+
+*****************************************************************************
+
+To create a route in React.js, you can use a popular routing library called React Router. React Router allows you to define different routes in your application and render different components based on the current URL.
+
+Here's a step-by-step guide on how to create a route in React.js using React Router:
+
+Step 1: Install React Router
+In your project directory, open the terminal or command prompt and run the following command to install React Router:
+
+shell
+Copy code
+npm install react-router-dom
+Step 2: Set up Router
+In your main application file (often called App.js), import the necessary components from React Router:
+
+jsx
+Copy code
+import { BrowserRouter as Router, Route } from 'react-router-dom';
+Wrap your entire application inside the Router component:
+
+jsx
+Copy code
+function App() {
+  return (
+    <Router>
+      {/* Your application components */}
+    </Router>
+  );
+}
+Step 3: Define Routes
+Inside the Router component, you can define your routes using the Route component. 
+Each Route component specifies a path and the component to render when that path matches the current URL.
+
+jsx
+Copy code
+function App() {
+  return (
+    <Router>
+      <Route path="/" component={Home} />
+      <Route path="/about" component={About} />
+      <Route path="/contact" component={Contact} />
+    </Router>
+  );
+}
+In the example above, the / route will render the Home component, the /about route will render the About component, 
+and the /contact route will render the Contact component. You can replace these components with your own.
+
+Step 4: Add Navigation Links
+To navigate between routes, you can use the Link component provided by React Router. Add navigation links to your components like this:
+
+jsx
+Copy code
+import { Link } from 'react-router-dom';
+
+function Navigation() {
+  return (
+    <nav>
+      <ul>
+        <li>
+          <Link to="/">Home</Link>
+        </li>
+        <li>
+          <Link to="/about">About</Link>
+        </li>
+        <li>
+          <Link to="/contact">Contact</Link>
+        </li>
+      </ul>
+    </nav>
+  );
+}
+Step 5: Render the Router
+In your main index.js file, render the App component:
+
+jsx
+Copy code
+import React from 'react';
+import ReactDOM from 'react-dom';
+import App from './App';
+
+ReactDOM.render(<App />, document.getElementById('root'));
+That's it! You've created routes in React.js using React Router. 
+Now, when you navigate to different URLs, the corresponding components will be rendered. 
+Don't forget to replace the Home, About, and Contact components with your own components.
+
