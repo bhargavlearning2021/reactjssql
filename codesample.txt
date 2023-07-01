@@ -1,0 +1,118 @@
+// Required dependencies
+const express = require('express');
+const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
+const mongoose = require('mongoose');
+
+// Express app setup
+const app = express();
+app.use(express.json());
+
+// MongoDB connection
+mongoose.connect('mongodb://localhost/news_blog', {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+});
+
+// MongoDB models
+const User = mongoose.model('User', {
+  username: String,
+  email: String,
+  password: String,
+  isAdmin: Boolean,
+});
+
+const Article = mongoose.model('Article', {
+  title: String,
+  content: String,
+  author: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+  },
+});
+
+// Routes
+
+// User registration
+app.post('/register', async (req, res) => {
+  try {
+    const { username, email, password } = req.body;
+
+    // Check if the user already exists
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
+      return res.status(409).json({ message: 'User already exists' });
+    }
+
+    // Hash the password
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    // Create a new user
+    const user = new User({
+      username,
+      email,
+      password: hashedPassword,
+      isAdmin: false,
+    });
+    await user.save();
+
+    res.status(201).json({ message: 'User registered successfully' });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+});
+
+// User login
+app.post('/login', async (req, res) => {
+  try {
+    const { email, password } = req.body;
+
+    // Check if the user exists
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(401).json({ message: 'Invalid credentials' });
+    }
+
+    // Compare passwords
+    const isPasswordValid = await bcrypt.compare(password, user.password);
+    if (!isPasswordValid) {
+      return res.status(401).json({ message: 'Invalid credentials' });
+    }
+
+    // Generate a JWT
+    const token = jwt.sign(
+      { userId: user._id, isAdmin: user.isAdmin },
+      'secretKey',
+      { expiresIn: '1h' }
+    );
+
+    res.status(200).json({ token });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+});
+
+// Article retrieval
+app.get('/articles', async (req, res) => {
+  try {
+    const articles = await Article.find().populate('author', 'username');
+    res.status(200).json(articles);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+});
+
+// Admin authentication middleware
+function authenticateAdmin(req, res, next) {
+  const token = req.headers.authorization;
+
+  if (!token) {
+    return res.status(401).json({ message: 'Unauthorized' });
+  }
+
+  jwt.verify(token, 'secretKey', (err, decodedToken) => {
+    if (err || !decodedToken.isAdmin) {
+      return res.status(401).
